@@ -1,0 +1,27 @@
+service: todo-list-backend
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: eu-west-1
+
+functions:
+  tasks:
+    handler: handler.app #handle - name of file, app = named export
+    events:
+      - http:
+          path: /tasks
+          method: get
+          cors: true
+      - http:
+          path: /tasks/{taskId}
+          method: put
+          cors: true
+      - http:
+          path: /tasks
+          method: post
+          cors: true
+      - http:
+          path: /tasks/{taskId}
+          method: delete
+          cors: true
