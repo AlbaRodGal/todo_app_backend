@@ -7,7 +7,7 @@ provider:
 
 functions:
   tasks:
-    handler: handler.app #handle - name of file, app = named export
+    handler: handler.app
     events:
       - http:
           path: /tasks
