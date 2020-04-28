@@ -6,9 +6,9 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 
 const connection = mysql.createConnection({
-  host: 'x',
-  user: 'x',
-  password: 'x',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   database: 'Tasks',
 });
 
@@ -28,28 +28,48 @@ app.get('/tasks', function (request, response) {
 });
 
 app.delete('/tasks/:taskId', (request, response) => {
-  // Should delete the task with the specified ID from the DB
-  if (request.params.taskId > 3) {
-    response.status(404).send(`Task ${request.params.taskId} does not exist`);
-  } else {
-    response.status(200).send(`You issued a delete request for ID: ${request.params.taskId}`);
-  }
+  const query = `DELETE FROM Task WHERE TaskId = ?`;
+  connection.query(query, [request.params.taskId], function (err) {
+    if (err) {
+      console.log("Error from MySQL", err);
+      response.status(500).send(err);
+    } else {
+      response.status(200).send(`Task ${request.params.taskId} successfully deleted!`)
+    }
+  })
 });
 
-app.post('/tasks', (request, response) => {
+app.post("/tasks", function (request, response) {
   const data = request.body;
-  // Should INSERT INTO the DB the new task
-  response.status(201).send(`Received a request to add task of ${data.text}!`);
+  const query = `INSERT INTO Task (Text, DueDate, Category, Priority, Completed, UserId) VALUES (?,?,?,?,?,?)`;
+  connection.query(query, [data.Text, data.DueDate, data.Category, data.Priority, false, data.UserId], function (err, results) {
+    if (err) {
+      console.log("Error from MySQL", err);
+      response.status(500).send(err);
+    } else {
+      connection.query(`SELECT * FROM Task WHERE TaskId = ${results.insertId}`, function (err, results) {
+        if (err) {
+          console.log("Error from MySQL", err);
+          response.status(500).send(err);
+        } else {
+          response.status(201).send(results[0]);
+        }
+      });
+    }
+  });
 });
 
 app.put('/tasks/:taskId', (request, response) => {
   const data = request.body;
-  // Should delete the task with the specified ID from the DB
-  if (request.params.taskId > 3) {
-    response.status(404).send(`Task ${request.params.taskId} does not exist`);
-  } else {
-    response.status(200).send(`You issued a put request of ${JSON.stringify(data)}  for ID: ${request.params.taskId}`);
-  }
+  const query = `UPDATE Task SET Text=? WHERE TaskId=${request.params.taskId}`;
+  connection.query(query, [data.Text], function (err) {
+    if (err) {
+      console.log("Error from MySQL", err);
+      response.status(500).send(err);
+    } else {
+      response.send(200).send("Task successfully updated!");
+    }
+  });
 });
 
 
