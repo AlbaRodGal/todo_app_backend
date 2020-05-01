@@ -34,9 +34,9 @@ app.delete('/tasks/:taskId', (request, response) => {
       console.log("Error from MySQL", err);
       response.status(500).send(err);
     } else {
-      response.status(200).send(`Task ${request.params.taskId} successfully deleted!`)
+      response.status(200).send(`Task successfully deleted!`)
     }
-  })
+  });
 });
 
 app.post("/tasks", function (request, response) {
@@ -61,13 +61,13 @@ app.post("/tasks", function (request, response) {
 
 app.put('/tasks/:taskId', (request, response) => {
   const data = request.body;
-  const query = `UPDATE Task SET Text=? WHERE TaskId=${request.params.taskId}`;
-  connection.query(query, [data.Text], function (err) {
+  const query = 'UPDATE Task SET? WHERE TaskId=?';
+  connection.query(query, [data, request.params.taskId], function (err) {
     if (err) {
       console.log("Error from MySQL", err);
       response.status(500).send(err);
     } else {
-      response.send(200).send("Task successfully updated!");
+      response.status(200).send("Task successfully updated!");
     }
   });
 });
